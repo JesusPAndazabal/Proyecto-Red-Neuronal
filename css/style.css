@@ -1,0 +1,20 @@
+body {
+    background-color:rgb(255, 255, 255);
+}
+#containerNeuronal{
+    margin-top: 3em;
+    margin-left: 10em;
+    margin-right: 5em;
+}
+
+.margin-t{
+    margin-top: 32em;
+}
+
+.card img{
+    margin-left: 20%;
+}
+
+.card .card-header{
+    color: white;
+}

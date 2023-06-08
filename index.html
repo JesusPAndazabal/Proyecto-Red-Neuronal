@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Neuronal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="./css/style.css">
+<body>
+    <h4 class="text-center mt-4">Red Neuronal</h4>
+    <hr>
+    <div class="" id="containerNeuronal">
+      <div class="row">
+        <div action="" class="col-md-7" ><!-- Inicio del 1 row -->
+          <div>
+
+            <div class="row"><!-- Contiene las voces generadas -->
+                <label for="" class="font-weight-bold">Listado de Voces - Eliga una opción</label>
+              <select class="form-control col-md-9 center" name="listavoces" id="listavoces"></select>
+            </div><br>  
+            <label for="" class = "font-weight-bold">Salida de video</label>
+            </div>
+    
+
+            <div class="card text-center margin-t">
+                <div class="card-header bg-secondary">
+                  Resultados
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="mb-6">
+                                <label class="mt-2 sub-titulo ajustado font-weight-bold" id="audifono">Audifono</label>
+                            </div>
+                           
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <div class="progress">
+                                <div id="progresoAudifono" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div> 
+                        </div>
+                        <div class="col-md-2">
+                            <label for="" id="confianza"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="mb-6">
+                                <label class="mt-2 sub-titulo ajustado font-weight-bold" id="gorra">Gorra</label>
+                            </div>
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <div class="progress">
+                                <div id="progresoGorra" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div> 
+                        </div>
+                        <div class="col-md-2">
+                            <label for="" id="confianza2"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="mb-6">
+                                <label class="mt-2 sub-titulo ajustado font-weight-bold" id="cuaderno">Cuaderno</label>
+                            </div>
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <div class="progress">
+                                <div id="progresoCuaderno" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="" id="confianza3"></label>
+                        </div>
+                    </div>
+
+    
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5"><!-- Inicio del 2 row -->
+          <div class="col d-flex justify-content-center">
+            <div class="card" style="width: 25rem;">
+                <div class="card-header bg-warning">
+                    Audifonos
+                </div>
+              <div class="card-body">
+                <img src="./img/Audifonos.png" class="mt-1 center tamano-img">
+              </div>
+            </div>
+          </div>
+          <div class="col d-flex justify-content-center mt-4">
+            <div class="card" style="width: 25rem;">
+                <div class="card-header bg-success">
+                    Gorra
+                </div>
+              <div class="card-body">
+                <img src="./img/Gorra.png" class="mt-1 center tamano-img">
+              </div>
+            </div>
+          </div>
+          <div class="col d-flex justify-content-center mt-4">
+            <div class="card" style="width: 25rem;">
+                <div class="card-header bg-danger">
+                    Cuaderno
+                </div>
+              <div class="card-body">
+                <img src="./img/cuaderno.png" class="mt-1 center tamano-img">
+              </div>
+            </div>
+          </div> 
+        </div><!-- Fin del col -->
+      </div>
+    </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+
+
+  <script>
+    
+    let video;
+    let classifier;
+
+
+    let sintetizador = window.speechSynthesis;
+    let locutor;
+    let voces;
+    let listaVocesCargadas = false;
+
+    let slVoces = document.getElementById("listavoces");
+
+    sintetizador.addEventListener('voiceschanged', function(){
+      if (!listaVocesCargadas){
+        voces = sintetizador.getVoices();
+
+        if (voces.length > 0){
+          voces.forEach(voz => {
+            let optVoz = document.createElement('option');
+            optVoz.textContent = `${voz.name} - ${voz.lang}`;
+            
+            if (voz.default) { 
+              optVoz.selected = true;
+            }
+            
+            optVoz.setAttribute('data-voz', voz.name);
+            slVoces.appendChild(optVoz);
+          });
+
+          listaVocesCargadas = true;
+        }
+      }
+    });
+    
+    sintetizador.getVoices();
+
+    let getVozElegida = function() {
+      let vozElegida = slVoces.selectedOptions[0].getAttribute('data-voz');
+      return voces.find(function(voz){
+        return voz.name == vozElegida;
+      });
+    }; 
+
+    function hablar(texto){
+      locutor = new SpeechSynthesisUtterance(texto);
+      locutor.voice = getVozElegida();
+      locutor.lang = locutor.voice.lang;
+      locutor.rate = 1;
+      locutor.pitch = 1;
+
+      sintetizador.speak(locutor);
+    }
+
+    function preload(){
+      classifier = ml5.imageClassifier('./model-img/model.json');
+    }
+    
+    function setup(){
+      let canvas = createCanvas(600, 440);
+
+      canvas.style('position', 'absolute');
+      canvas.style('margin-top', '-55em');
+      canvas.style('margin-left', '18%');
+
+      video = createCapture(video);
+      video.size(600, 400);
+      video.hide();
+
+      classifyVideo();
+    }
+
+    function draw(){
+      background(0);
+      image(video, 0, 0);
+    }
+
+    function classifyVideo(){
+      classifier.classify(video, gotResult);
+    }
+
+    function gotResult(error, result){
+      if (error){
+        console.error(error);
+        return;
+      }
+
+      const label = result[0].label;
+      const label2 = result[1].label;
+      const label3 = result[2].label;
+
+      let progresoAudifono = select('#progresoAudifono');
+      let progresoGorra = select('#progresoGorra');
+      let progresoCuaderno = select('#progresoCuaderno');
+
+      let txtaudifono = select('#audifono');
+      let txtgorra = select('#gorra');
+      let txtcuaderno = select('#cuaderno');
+
+      const porcentaje1 = (result[0].confidence * 100).toFixed(2);
+      const porcentaje2 = (result[1].confidence * 100).toFixed(2);
+      const porcentaje3 = (result[2].confidence * 100).toFixed(2);
+
+      obtenerResultados("Audifonos",1);
+      obtenerResultados("Gorra",2);
+      obtenerResultados("Cuaderno",3);
+
+
+      function obtenerResultados(nombre, numero){
+        let valornum = numero;
+        let nombreuni = nombre;
+        
+        if(label === nombre){
+          const porcentaje1 = (result[0].confidence * 100).toFixed(2);
+          valor = `${porcentaje1}%`;
+          generarResultados(valornum, nombreuni);
+        }else if(label2 === nombre){
+          const porcentaje2 = (result[1].confidence * 100).toFixed(2);
+          valor = `${porcentaje2}%`;
+          generarResultados(valornum, nombreuni);
+        }else if(label3 === nombre){
+          const porcentaje3 = (result[2].confidence * 100).toFixed(2);
+          valor = `${porcentaje3}%`;
+          generarResultados(valornum, nombreuni);
+        }
+      }
+
+    
+      function generarResultados(valornum,nombreuni){
+        if(valornum === 1){
+          progresoAudifono.style('width', valor);
+          txtaudifono =`${nombreuni} `;
+          document.getElementById("audifono").innerHTML = txtaudifono;
+          document.getElementById("confianza").innerHTML = valor;
+        }else if(valornum === 2){
+          progresoGorra.style('width', valor);
+          txtgorra =`${nombreuni}`;
+          document.getElementById("gorra").innerHTML = txtgorra;
+          document.getElementById("confianza2").innerHTML = valor;
+        }else if(valornum === 3){
+          progresoCuaderno.style('width', valor);
+          txtcuaderno = `${nombreuni}`;
+          document.getElementById("cuaderno").innerHTML = txtcuaderno;
+          document.getElementById("confianza3").innerHTML = valor;
+        }
+      }
+      
+      if (porcentaje1 >= 90){
+        hablar(label);
+      }else{
+        if (sintetizador.speaking){
+          sintetizador.cancel();
+        }
+      }
+
+      classifyVideo();
+    }
+
+  </script>
+</body>
+</html>
